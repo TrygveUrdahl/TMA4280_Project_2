@@ -1,0 +1,14 @@
+.DS_Store
+
+build/*
+!build/.gitinclude
+
+
+output/*
+!output/.gitinclude
+
+data/*
+!data/.gitinclude
+
+# Exclude all png images
+*.png
