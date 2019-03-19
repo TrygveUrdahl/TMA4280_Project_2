@@ -10,5 +10,7 @@ output/*
 data/*
 !data/.gitinclude
 
+poisson/*
+
 # Exclude all png images
 *.png
