@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <chrono>
 #include "mpi.h"
 #include "omp.h"
 
@@ -22,9 +23,13 @@ int main(int argc, char** argv) {
     MPI_Finalize();
     return 1;
   }
-
-
-
+  auto start = std::chrono::high_resolution_clock::now();
+  auto mat = make1DLaplaceOperator(n);
+  auto end = std::chrono::high_resolution_clock::now();
+  //auto mat = makeMatrix(4, 4);
+  //printMatrix(mat);
+  std::chrono::duration<double> diff = end-start;
+  std::cout << "Time taken to create Laplace Operator: " << diff.count() << "s" << std::endl;
   MPI_Finalize();
   return 0;
 }

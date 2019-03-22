@@ -3,7 +3,6 @@
 build/*
 !build/.gitinclude
 
-
 output/*
 !output/.gitinclude
 
@@ -14,3 +13,6 @@ poisson/*
 
 # Exclude all png images
 *.png
+
+# Temporary test files excluded
+src/Matrix.cpp

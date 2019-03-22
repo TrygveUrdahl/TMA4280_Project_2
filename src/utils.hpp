@@ -1,5 +1,7 @@
 #pragma once
 
+typedef std::vector< std::vector<double> > matrix_t;
+
 // Initialize vector with all values initialized to 0
 // Input
 // n: size of vector
@@ -26,4 +28,15 @@ double rhs(double (*function)(double, double), double x, double y);
 // Export matrix to file
 // Input
 // mat: matrix to export
-void exportMatrix(std::vector< std::vector<double> > &mat);
+// fname: name of output file (optional)
+void exportMatrix(matrix_t &mat, std::string fname = "../output/mat.txt");
+
+// Print matrix to console for debug
+// Input
+// mat: matrix to print
+void printMatrix(matrix_t &mat);
+
+// Generate 1D Laplace operator matrix
+// Input
+// n: dimension of matrix
+matrix_t make1DLaplaceOperator(int n);
