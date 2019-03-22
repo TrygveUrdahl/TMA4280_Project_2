@@ -30,6 +30,6 @@ include_directories(${INCLUDES})
 
 add_library(common fst.f)
 
-add_executable(project2 main.cpp)
+add_executable(poisson main.cpp utils.cpp)
 
-target_link_libraries(project2 common ${DEPLIBS_CXX})
+target_link_libraries(poisson common ${DEPLIBS_CXX})
