@@ -6,11 +6,13 @@ enable_language(Fortran)
 enable_language(CXX)
 
 #SET(CMAKE_CXX_COMPILER "g++-8")
-add_compile_options(-std=c++11 -O3)
+#add_compile_options(-std=c++11 -O3)
 
 find_package(MPI REQUIRED)
 find_package(OpenMP)
+
 set(CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++11 -O3" ${CMAKE_CXX_FLAGS})
 
 if(MPI_FOUND)
   add_definitions(-DHAVE_MPI=1)
@@ -23,7 +25,8 @@ endif()
 if(OPENMP_FOUND)
   add_definitions(-DHAVE_OPENMP=1)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -openmp")
+  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
 include_directories(${INCLUDES})
@@ -31,5 +34,7 @@ include_directories(${INCLUDES})
 add_library(common fst.f)
 
 add_executable(poisson main.cpp utils.cpp)
+add_executable(poissonC poisson.c)
 
 target_link_libraries(poisson common ${DEPLIBS_CXX})
+target_link_libraries(poissonC common ${DEPLIBS_C})

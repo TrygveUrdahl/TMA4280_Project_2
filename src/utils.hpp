@@ -1,6 +1,6 @@
 #pragma once
 
-typedef std::vector< std::vector<double> > matrix_t;
+#include "structs.hpp"
 
 // Initialize vector with all values initialized to 0
 // Input
@@ -11,12 +11,12 @@ std::vector<double> makeVector(int n);
 // Input
 // n1: first dimension of matrix
 // n2: second dimension of matrix
-std::vector< std::vector<double> > makeMatrix(int n1, int n2);
+matrix_t makeMatrix(int n1, int n2);
 
 // Calculate transpose of matrix in-place
 // Input
 // mat: matrix to transpose in-place
-void transpose(std::vector< std::vector<double> > &mat);
+void transposeSeq(matrix_t &mat);
 
 // Calculate right hand side from passed function pointer
 // Input
