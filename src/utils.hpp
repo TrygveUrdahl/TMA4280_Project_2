@@ -5,7 +5,7 @@
 // Initialize vector with all values initialized to 0
 // Input
 // n: size of vector
-std::vector<double> makeVector(int n);
+vector_t makeVector(int n);
 
 // TODO: make memory contiguous?
 // Input

@@ -8,7 +8,7 @@
 #include "structs.hpp"
 
 inline int matIdx(matrix_t &mat, int x, int y) {
-  return y + mat.n1 * x;
+  return y + x * mat.n1;
 }
 
 // Export matrix to file
@@ -36,11 +36,15 @@ void printMatrix(matrix_t &mat) {
 // Initialize vector with all values initialized to 0
 // Input
 // n: size of vector
-std::vector<double> makeVector(int n) {
+vector_t makeVector(int n) {
+  vector_t vec;
   std::vector<double> array(n, 0);
-  return array;
+  vec.vec = array;
+  vec.n1 = n;
+  return vec;
 }
 
+// Initialize matrix with all values initialized to 0
 // Input
 // n1: first dimension of matrix
 // n2: second dimension of matrix
@@ -57,15 +61,14 @@ matrix_t makeMatrix(int n1, int n2) {
 // Input
 // mat: matrix to transpose in-place
 void transposeSeq(matrix_t &mat) {
-  int n1 = mat.n1;
-  int n2 = mat.n2;
-  for (int i = 0; i < n1; i++) {
-    for (int j = 0; j < n2; j++) {
+  for (int i = 0; i < mat.n1; i++) {
+    for (int j = 0; j < mat.n2; j++) {
       if (j>i) {
         std::swap(mat.vec.at(matIdx(mat, i, j)), mat.vec.at(matIdx(mat, j, i)));
       }
     }
   }
+  //std::swap(mat.n1, mat.n2);
 }
 
 // Calculate right hand side from passed function pointer
