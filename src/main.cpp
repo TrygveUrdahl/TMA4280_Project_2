@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <chrono>
+#include <cmath>
 #include "mpi.h"
 #include "omp.h"
 
@@ -9,6 +10,10 @@
 #include "extern.hpp"
 #include "utils.hpp"
 #include "structs.hpp"
+
+double fRhs(double x, double y) {
+  return 1.0;
+}
 
 int main(int argc, char** argv) {
   MPI_Init(&argc, &argv);
@@ -45,13 +50,65 @@ int main(int argc, char** argv) {
   int m = n - 1;          // Degrees of freedom in each direction
   double h = 1.0/n;       // Mesh size / step size
   int nPerRank = n/size;  // Cols per rank
+  int nn = 4 * n;
 
-  // Setut matrixes and send/recv buffers
+  // Setup matrixes and send/recv buffers
   matrix_t b = makeMatrix(nPerRank, m);
   matrix_t bt = makeMatrix(nPerRank, m);
   vector_t send = makeVector(nPerRank * n);
   vector_t recv = makeVector(nPerRank * n);
+  vector_t xAxis = makeVector(nPerRank);
+  vector_t yAxis = makeVector(n);
+  vector_t z = makeVector(nn);
+  vector_t diag = makeVector(n);
 
+  // Create local x and y axis vectors for convenience
+  for (int i = 0; i < nPerRank; i++) {
+    xAxis.vec.at(i) = (i + 1 + nPerRank*rank) * h;
+  }
+  for (int i = 0; i < n + 1; i++) {
+    yAxis.vec.at(i) = (i + 1) * h;
+  }
+
+  for (int i = 0; i < n; i++) {
+    diag.vec.at(i) = 2.0 * (1.0 - cos((i+1) * M_PI / n));
+  }
+
+  for (int i = 0; i < nPerRank; i++) {
+    for (int j = 0; j < n; j++) {
+      b.vec.at(matIdx(b, i, j)) = h * h * rhs(fRhs, xAxis.vec.at(i), yAxis.vec.at(j));
+    }
+  }
+
+
+  // Start solving
+  for (int i = 0; i < nPerRank; i++) {
+    //fst_(b.vec.data()[n*i], &n, z.vec.data(), &nn);
+  }
+
+  // TODO: Transpose
+  // transpose(bt, b, ...);
+
+  for (int i = 0; i < nPerRank; i++) {
+    //fstinv_(bt.vec.data()[n*i], &n, z.vec.data(), &nn);
+  }
+
+  for (int i = 0; i < nPerRank; i++) {
+    for (int j = 0; j < n; j++) {
+      bt.vec.at(matIdx(bt, i, j)) /= diag.vec.at(i + rank * nPerRank) + diag.vec.at(j);
+    }
+  }
+
+  for (int i = 0; i < nPerRank; i++) {
+    //fst_(bt.vec.data()[n*i], &n, z.vec.data(), &nn);
+  }
+
+  // TODO: Transpose
+  // transpose(b, bt, ...);
+
+  for (int i = 0; i < nPerRank; i++) {
+    //fstinv_(b.vec.data()[n*i], &n, z.vec.data(), &nn);
+  }
 
 /*
   auto start = std::chrono::high_resolution_clock::now();

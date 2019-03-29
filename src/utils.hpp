@@ -2,6 +2,9 @@
 
 #include "structs.hpp"
 
+
+inline int matIdx(matrix_t &mat, int x, int y);
+
 // Initialize vector with all values initialized to 0
 // Input
 // n: size of vector

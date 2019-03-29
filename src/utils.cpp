@@ -7,6 +7,7 @@
 
 #include "structs.hpp"
 
+
 inline int matIdx(matrix_t &mat, int x, int y) {
   return y + x * mat.n1;
 }
