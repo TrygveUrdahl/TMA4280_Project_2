@@ -4,11 +4,12 @@
 #include <vector>
 #include <string>
 #include "omp.h"
+#include "mpi.h"
 
 #include "structs.hpp"
+#include "utils.hpp"
 
-
-inline int matIdx(matrix_t &mat, int x, int y) {
+int matIdx(matrix_t &mat, int x, int y) {
   return y + x * mat.n1;
 }
 
@@ -50,26 +51,12 @@ vector_t makeVector(int n) {
 // n1: first dimension of matrix
 // n2: second dimension of matrix
 matrix_t makeMatrix(int n1, int n2) {
-  std::vector<double> vec(n1*n2,0);
+  std::vector<double> vec(n1*n2, 0);
   matrix_t mat;
   mat.vec = vec;
   mat.n1 = n1;
   mat.n2 = n2;
   return mat;
-}
-
-// Calculate transpose of matrix in-place sequential
-// Input
-// mat: matrix to transpose in-place
-void transposeSeq(matrix_t &mat) {
-  for (int i = 0; i < mat.n1; i++) {
-    for (int j = 0; j < mat.n2; j++) {
-      if (j>i) {
-        std::swap(mat.vec.at(matIdx(mat, i, j)), mat.vec.at(matIdx(mat, j, i)));
-      }
-    }
-  }
-  //std::swap(mat.n1, mat.n2);
 }
 
 // Calculate right hand side from passed function pointer
@@ -81,7 +68,7 @@ double rhs(double (*function)(double, double), double x, double y) {
   return function(x, y);
 }
 
-// Generate 1D Laplace operator matrix
+// Generate 1D Laplace operator matrix (which it turns out is not needed)
 // Input
 // n: dimension of matrix
 matrix_t make1DLaplaceOperator(int n) {
@@ -98,3 +85,25 @@ matrix_t make1DLaplaceOperator(int n) {
   }
   return mat;
 }
+
+
+void transpose(matrix_t &bt, matrix_t &b, std::vector<int> &bsize, std::vector<int> &displacement,
+                std::vector<int> &nPerRankVec, int rank, int size, MPI_Comm myComm){
+
+  MPI_Alltoallv(b.vec.data(), bsize.data(), displacement.data(), MPI_DOUBLE,
+                bt.vec.data(), bsize.data(), displacement.data(), MPI_DOUBLE, myComm);
+
+  for (int i = 0; i < size; i++) {
+    int d = 0;
+    for (int j = 0; j < i; j++) {
+      d = d + nPerRankVec.at(j);
+    }
+    for (int column = 0; column < nPerRankVec.at(rank); column++) {
+      for (int row = column + 1; row < nPerRankVec.at(i); row++) {
+        double *elem1 = bt.vec.data() + matIdx(bt, column, row + d);
+        double *elem2 = bt.vec.data() + matIdx(bt, row, column + d);
+        std::swap(*elem1, *elem2);
+      }
+    }
+  }
+ }

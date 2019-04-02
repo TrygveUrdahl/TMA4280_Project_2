@@ -16,3 +16,6 @@ poisson/*
 
 # Temporary test files excluded
 src/Matrix.cpp
+
+FastPoisson.cpp
+FastPoisson.hpp

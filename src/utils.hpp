@@ -3,7 +3,7 @@
 #include "structs.hpp"
 
 
-inline int matIdx(matrix_t &mat, int x, int y);
+int matIdx(matrix_t &mat, int x, int y);
 
 // Initialize vector with all values initialized to 0
 // Input
@@ -16,11 +16,6 @@ vector_t makeVector(int n);
 // n2: second dimension of matrix
 matrix_t makeMatrix(int n1, int n2);
 
-// Calculate transpose of matrix in-place
-// Input
-// mat: matrix to transpose in-place
-void transposeSeq(matrix_t &mat);
-
 // Calculate right hand side from passed function pointer
 // Input
 // function: pointer to function for evaluating rhs
@@ -32,7 +27,7 @@ double rhs(double (*function)(double, double), double x, double y);
 // Input
 // mat: matrix to export
 // fname: name of output file (optional)
-void exportMatrix(matrix_t &mat, std::string fname = "../output/mat.txt");
+void exportMatrix(matrix_t &mat, std::string fname);
 
 // Print matrix to console for debug
 // Input
@@ -43,3 +38,7 @@ void printMatrix(matrix_t &mat);
 // Input
 // n: dimension of matrix
 matrix_t make1DLaplaceOperator(int n);
+
+
+void transpose(matrix_t &bt, matrix_t &b, std::vector<int> &bsize, std::vector<int> &displacement,
+                std::vector<int> &nPerRankVec, int rank, int size, MPI_Comm myComm);
