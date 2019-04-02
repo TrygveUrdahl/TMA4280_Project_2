@@ -132,6 +132,8 @@ int main(int argc, char** argv) {
   for (int i = 0; i < nPerRank; i++) {
     fstinv_(b.vec.data() + (n * i), &n, z.vec.data(), &nn);
   }
+*/
+
 
 
 
