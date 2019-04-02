@@ -4,11 +4,12 @@
 #include <vector>
 #include <string>
 #include "omp.h"
+#include "mpi.h"
 
 #include "structs.hpp"
 
 
-inline int matIdx(matrix_t &mat, int x, int y) {
+int matIdx(matrix_t &mat, int x, int y) {
   return y + x * mat.n1;
 }
 
@@ -50,26 +51,12 @@ vector_t makeVector(int n) {
 // n1: first dimension of matrix
 // n2: second dimension of matrix
 matrix_t makeMatrix(int n1, int n2) {
-  std::vector<double> vec(n1*n2,0);
+  std::vector<double> vec(n1*n2, 0);
   matrix_t mat;
   mat.vec = vec;
   mat.n1 = n1;
   mat.n2 = n2;
   return mat;
-}
-
-// Calculate transpose of matrix in-place sequential
-// Input
-// mat: matrix to transpose in-place
-void transposeSeq(matrix_t &mat) {
-  for (int i = 0; i < mat.n1; i++) {
-    for (int j = 0; j < mat.n2; j++) {
-      if (j>i) {
-        std::swap(mat.vec.at(matIdx(mat, i, j)), mat.vec.at(matIdx(mat, j, i)));
-      }
-    }
-  }
-  //std::swap(mat.n1, mat.n2);
 }
 
 // Calculate right hand side from passed function pointer
@@ -97,4 +84,37 @@ matrix_t make1DLaplaceOperator(int n) {
     }
   }
   return mat;
+}
+
+// Parallel transpose of matrix
+// Inputs
+// b: matrix
+// bt: matrix transposed (result)
+// send: send buffer
+// recv: receive buffer
+// n: total number of rows
+// nPerRank: number of columns per rank
+// rank: index of node in communicator
+// size: total number of nodes
+// myComm: MPI Comm to use
+void transpose(matrix_t &b, matrix_t &bt, vector_t &send, vector_t &recv,
+              int n, int nPerRank, int rank, int size, MPI_Comm myComm) {
+
+  for (int i = 0; i < nPerRank; i++) {
+    for (int j = 0; j < n; j++) {
+      int idx = nPerRank * i + (j / nPerRank) * (nPerRank * nPerRank) + j % nPerRank;
+      send.vec.at(idx) = b.vec.at(matIdx(b, i, j));
+    }
+  }
+
+  MPI_Alltoall(send.vec.data(), nPerRank*nPerRank, MPI_DOUBLE, recv.vec.data(),
+    nPerRank*nPerRank, MPI_DOUBLE, myComm);
+
+  int index = 0;
+  for (int j = 0; j < n; j++) {
+    for (int i = 0; i < nPerRank; i++) {
+      bt.vec.at(matIdx(bt, i, j)) = recv.vec.at(index);
+      index++;
+    }
+  }
 }

@@ -3,7 +3,7 @@
 #include "structs.hpp"
 
 
-inline int matIdx(matrix_t &mat, int x, int y);
+int matIdx(matrix_t &mat, int x, int y);
 
 // Initialize vector with all values initialized to 0
 // Input
@@ -15,11 +15,6 @@ vector_t makeVector(int n);
 // n1: first dimension of matrix
 // n2: second dimension of matrix
 matrix_t makeMatrix(int n1, int n2);
-
-// Calculate transpose of matrix in-place
-// Input
-// mat: matrix to transpose in-place
-void transposeSeq(matrix_t &mat);
 
 // Calculate right hand side from passed function pointer
 // Input

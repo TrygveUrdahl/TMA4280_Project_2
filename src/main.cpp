@@ -60,13 +60,13 @@ int main(int argc, char** argv) {
   vector_t xAxis = makeVector(nPerRank);
   vector_t yAxis = makeVector(n);
   vector_t z = makeVector(nn);
-  vector_t diag = makeVector(n);
+  vector_t diag = makeVector(n); // Should be m?
 
-  // Create local x and y axis vectors for convenience
+  // Create local x and y axis index vectors for convenience
   for (int i = 0; i < nPerRank; i++) {
     xAxis.vec.at(i) = (i + 1 + nPerRank*rank) * h;
   }
-  for (int i = 0; i < n + 1; i++) {
+  for (int i = 0; i < n; i++) { // Should maybe be i < n instead
     yAxis.vec.at(i) = (i + 1) * h;
   }
 
@@ -76,21 +76,23 @@ int main(int argc, char** argv) {
 
   for (int i = 0; i < nPerRank; i++) {
     for (int j = 0; j < n; j++) {
-      b.vec.at(matIdx(b, i, j)) = h * h * rhs(fRhs, xAxis.vec.at(i), yAxis.vec.at(j));
+      double* elem = b.vec.data() + matIdx(b, i, j);
+      *elem = h * h * rhs(fRhs, xAxis.vec.at(i), yAxis.vec.at(j));
     }
   }
 
 
-  // Start solving
+  // Start solving, one column FST per iteration
   for (int i = 0; i < nPerRank; i++) {
-    //fst_(b.vec.data()[n*i], &n, z.vec.data(), &nn);
+    fst_(b.vec.data() + (n * i), &n, z.vec.data(), &nn);
   }
-
+/*
   // TODO: Transpose
   // transpose(bt, b, ...);
 
+  // Inverse FST per column
   for (int i = 0; i < nPerRank; i++) {
-    //fstinv_(bt.vec.data()[n*i], &n, z.vec.data(), &nn);
+    fstinv_(bt.vec.data() + (n * i), &n, z.vec.data(), &nn);
   }
 
   for (int i = 0; i < nPerRank; i++) {
@@ -100,15 +102,17 @@ int main(int argc, char** argv) {
   }
 
   for (int i = 0; i < nPerRank; i++) {
-    //fst_(bt.vec.data()[n*i], &n, z.vec.data(), &nn);
+    fst_(bt.vec.data() + (n * i), &n, z.vec.data(), &nn);
   }
 
   // TODO: Transpose
   // transpose(b, bt, ...);
 
   for (int i = 0; i < nPerRank; i++) {
-    //fstinv_(b.vec.data()[n*i], &n, z.vec.data(), &nn);
+    fstinv_(b.vec.data() + (n * i), &n, z.vec.data(), &nn);
   }
+*/
+
 
 /*
   auto start = std::chrono::high_resolution_clock::now();
