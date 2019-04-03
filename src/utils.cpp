@@ -7,17 +7,27 @@
 #include "mpi.h"
 
 #include "structs.hpp"
-#include "utils.hpp"
+
 
 int matIdx(matrix_t &mat, int x, int y) {
-  return y + x * mat.n1;
+  return y + x * mat.n2; // Should be n2?
 }
 
 // Export matrix to file
 // Input
 // mat: matrix to export
 void exportMatrix(matrix_t &mat, std::string fname = "../output/mat.txt") {
-
+  std::ofstream file;
+  file.open(fname);
+  if (file.is_open()) {
+    for (int i = 0; i < mat.n1; i++) {
+      for (int j = 0; j < mat.n2; j++) {
+        file << mat.vec.at(matIdx(mat, i, j)) << " ";
+      }
+      file << std::endl;
+    }
+  }
+  file.close();
 }
 
 // Print matrix to console for debug
@@ -102,7 +112,8 @@ void transpose(matrix_t &bt, matrix_t &b, std::vector<int> &bsize, std::vector<i
       for (int row = column + 1; row < nPerRankVec.at(i); row++) {
         double *elem1 = bt.vec.data() + matIdx(bt, column, row + d);
         double *elem2 = bt.vec.data() + matIdx(bt, row, column + d);
-        std::swap(*elem1, *elem2);
+        //std::cout << "elem1: " << *elem1 << ". elem2: " << *elem2 << std::endl;
+        std::swap(*elem1, *elem2); // Segerror
       }
     }
   }

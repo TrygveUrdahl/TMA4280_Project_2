@@ -26,6 +26,21 @@ real **mk_2D_array(size_t n1, size_t n2, bool zero);
 void transpose(real **bt, real **b, size_t m);
 real rhs(real x, real y);
 
+void exportMatrix(double** mat, int n) {
+
+  FILE* file = fopen("../output/mat.txt", "w");
+  for (int i = 0; i < n; i++) {
+     for (int j = 0; j < n; j++) {
+         fprintf(file, "%f ", mat[i][j]);
+     }
+    fprintf(file, "\n");
+  }
+  fclose(file);
+}
+
+
+
+
 // Functions implemented in FORTRAN in fst.f and called from C.
 // The trailing underscore comes from a convention for symbol names, called name
 // mangling: if can differ with compilers.
@@ -157,7 +172,7 @@ int main(int argc, char **argv)
             u_max = u_max > fabs(b[i][j]) ? u_max : fabs(b[i][j]);
         }
     }
-
+    exportMatrix(b, m);
     printf("u_max = %e\n", u_max);
 
     return 0;

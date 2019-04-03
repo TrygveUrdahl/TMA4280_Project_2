@@ -27,7 +27,7 @@ double rhs(double (*function)(double, double), double x, double y);
 // Input
 // mat: matrix to export
 // fname: name of output file (optional)
-void exportMatrix(matrix_t &mat, std::string fname);
+void exportMatrix(matrix_t &mat, std::string fname = "../output/mat.txt");
 
 // Print matrix to console for debug
 // Input
