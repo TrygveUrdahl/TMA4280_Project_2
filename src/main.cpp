@@ -12,7 +12,7 @@
 #include "structs.hpp"
 
 double fRhs(double x, double y) {
-  return 1.0;
+  return 1;
 }
 
 int main(int argc, char** argv) {
@@ -20,15 +20,15 @@ int main(int argc, char** argv) {
   if (argc < 2) {
     std::cout << "Requires argument(s): " << std::endl;
     std::cout << "\tint n: size of grid (power of two)" << std::endl;
-    MPI_Finalize();
+    MPI_Abort(MPI_COMM_WORLD, MPI_ERR_ARG);
     return 1;
   }
   int n = atoi(argv[1]);
 
   if (!((n != 0) && ((n &(n - 1)) == 0))) {
-    std::cout << "\"n\" must be power of two! " << std::endl;
-    MPI_Abort(MPI_COMM_WORLD, MPI_ERR_DIMS);
-    return 1;
+    // std::cout << "\"n\" must be power of two! " << std::endl;
+    // MPI_Abort(MPI_COMM_WORLD, MPI_ERR_DIMS);
+    // return 1;
   }
 
   // Setup MPI variables
@@ -45,9 +45,8 @@ int main(int argc, char** argv) {
   int nn = 4 * n;
 
   // Initialize nPerRankVec
-  int rows = m / size;
   for (int i = 0; i < size; i++) {
-    nPerRankVec.at(i) = rows;
+    nPerRankVec.at(i) = m/size;
   }
   // Distribute the rest of columns
   int rest = m % size;
@@ -65,15 +64,27 @@ int main(int argc, char** argv) {
   vector_t z = makeVector(nn);
   vector_t diag = makeVector(n);
   std::vector<int> bsize(size, 0);
-  std::vector<int> displacement(size + 1, 0);
+  std::vector<int> bsizegather(size, 0);
+  std::vector<int> displacement(size, 0);
+  std::vector<int> displacementgather(size, 0);
 
   // Initialize vectors for transpose logic
+  if (rank==0) std::cout << "bsize: ";
   for (int i = 0; i < size; i++) {
     bsize.at(i) = nPerRankVec.at(rank) * nPerRankVec.at(i);
+    bsizegather.at(i) = nPerRankVec.at(i) * m;
+    if (rank == 0) std::cout << bsize.at(i) << " ";
   }
+  if (rank==0) std::cout << std::endl;
   for (int i = 1; i < size; i++) {
     displacement.at(i) = displacement.at(i - 1) + bsize.at(i - 1);
+    displacementgather.at(i) = displacementgather.at(i - 1) + bsizegather.at(i - 1);
   }
+
+  testTranspose(bt, b, m, bsize, bsizegather, displacement, displacementgather, nPerRankVec, rank, size, myComm);
+
+
+  /*
   // Create local x and y axis index vectors for convenience
   for (int i = 0; i < nPerRank; i++) {
     xAxis.vec.at(i) = (i + 1 + nPerRank*rank) * h;
@@ -94,41 +105,51 @@ int main(int argc, char** argv) {
   }
 
   // Start solving, one column FST per iteration
-  //#pragma omp parallel for schedule(static)
+  #pragma omp parallel for schedule(static)
   for (int i = 0; i < nPerRank; i++) {
-    fst_(b.vec.data() + (m * i), &m, z.vec.data(), &nn);
+    fst_(b.vec.data() + (m * i), &n, z.vec.data(), &nn);
   }
 
   // Transpose
-  //transpose(bt, b, bsize, displacement, nPerRankVec, rank, size, myComm);
+  //transpose_p(bt, b, bsize, displacement, nPerRankVec, rank, size, myComm);
+  transpose(bt, b, bsize, displacement, nPerRankVec, rank, size, myComm);
 
   // Inverse FST per column
-  //#pragma omp parallel for schedule(static)
+  #pragma omp parallel for schedule(static)
   for (int i = 0; i < nPerRank; i++) {
-    fstinv_(bt.vec.data() + (m * i), &m, z.vec.data(), &nn);
+    fstinv_(bt.vec.data() + (m * i), &n, z.vec.data(), &nn);
   }
 
-  //#pragma omp parallel for schedule(static)
+  #pragma omp parallel for schedule(static)
   for (int i = 0; i < nPerRank; i++) {
-    for (int j = 0; j < n; j++) {
+    for (int j = 0; j < m; j++) {
       double* elem = bt.vec.data() + matIdx(b, i, j);
       *elem /= diag.vec.at(i + rank * nPerRank) + diag.vec.at(j);
     }
   }
 
-  //#pragma omp parallel for schedule(static)
+  #pragma omp parallel for schedule(static)
   for (int i = 0; i < nPerRank; i++) {
-    fst_(bt.vec.data() + (m * i), &m, z.vec.data(), &nn);
+    fst_(bt.vec.data() + (m * i), &n, z.vec.data(), &nn);
   }
 
   // Transpose
-  //transpose(b, bt, bsize, displacement, nPerRankVec, rank, size, myComm);
+  //transpose_p(b, bt, bsize, displacement, nPerRankVec, rank, size, myComm);
+  transpose(b, bt, bsize, displacement, nPerRankVec, rank, size, myComm);
 
-  //#pragma omp parallel for schedule(static)
+  #pragma omp parallel for schedule(static)
   for (int i = 0; i < nPerRank; i++) {
-    fstinv_(b.vec.data() + (m * i), &m, z.vec.data(), &nn);
+    fstinv_(b.vec.data() + (m * i), &n, z.vec.data(), &nn);
   }
 
+
+  matrix_t result = makeMatrix(m,m);
+  gatherMatrix(result, b, bsizegather, displacementgather, rank, myComm);
+
+  if(rank == 0) exportMatrix(result);
+  */
+/*
+  // Test matrix export
   if (rank==0) {
     auto matrix = makeMatrix(n,n);
     for (int i = 0; i < n*n; i++) {
@@ -136,7 +157,7 @@ int main(int argc, char** argv) {
     }
     exportMatrix(matrix);
   }
-
+*/
 
 
 
