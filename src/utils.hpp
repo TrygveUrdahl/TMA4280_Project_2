@@ -47,8 +47,10 @@ void transpose(matrix_t &bt, matrix_t &b, std::vector<int> &bsize, std::vector<i
 void gatherMatrix(matrix_t &result, matrix_t &b, std::vector<int> &bsize,
                 std::vector<int> &displacement, int rank, MPI_Comm myComm);
 
-void transpose_p(matrix_t &bt, matrix_t &b, std::vector<int> bsize, std::vector<int> displ, std::vector<int> nPerProcVec, int rank, int size, MPI_Comm myComm);
+void transpose_p(matrix_t &bt, matrix_t &b, std::vector<int> bsize, std::vector<int> displ, std::vector<int> nPerRankVec, int rank, int size, MPI_Comm myComm);
 
-void testTranspose(matrix_t &bt, matrix_t &b, int m, std::vector<int> &bsize, std::vector<int> &bsizegather, std::vector<int> &displacement, std::vector<int> &displacementgather, std::vector<int> &nPerRankVec, int rank, int size, MPI_Comm myComm);
+void testTranspose(matrix_t &bt, matrix_t &b, int m, std::vector<int> &bsize, std::vector<int> &bsizegather, std::vector<int> &displacement, std::vector<int> &displacementgather, std::vector<int> &nPerRankVec, int rank, int size, MPI_Comm myComm, vector_t &send, vector_t &recv);
 
 void fillMatrix(matrix_t &b, std::vector<int> &displacementgather, int n1, int n2, int rank);
+
+void transpose_3(matrix_t &bt, matrix_t &b, vector_t &send, vector_t &recv, std::vector<int> &nPerRankVec, std::vector<int> &bsize, std::vector<int> &displacement, int n, int rank, int size, MPI_Comm myComm);
