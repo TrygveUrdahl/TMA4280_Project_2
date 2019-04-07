@@ -36,5 +36,5 @@ add_library(common fst.f)
 add_executable(poisson main.cpp utils.cpp)
 add_executable(poissonC poisson.c)
 
-target_link_libraries(poisson common ${DEPLIBS_CXX})
+target_link_libraries(poisson common ${DEPLIBS_CXX} OpenMP::OpenMP_CXX)
 target_link_libraries(poissonC common ${DEPLIBS_C})

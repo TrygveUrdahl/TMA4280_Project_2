@@ -7,6 +7,7 @@
 #include "mpi.h"
 
 #include "structs.hpp"
+#include "rhs.hpp"
 
 // Return id of element (x, y) in matrix
 // Input
@@ -83,14 +84,13 @@ double rhs(double (*function)(double, double), double x, double y) {
 
 
 // Gather all b matrices to result on root node 0
-// Input
 void gatherMatrix(matrix_t &result, matrix_t &b, std::vector<int> &bsize,
           std::vector<int> &displacement, int rank, MPI_Comm myComm) {
 	MPI_Gatherv(b.vec.data(), b.vec.size(), MPI_DOUBLE, result.vec.data(),
               bsize.data(), displacement.data(), MPI_DOUBLE, 0, myComm);
 }
 
-
+// Parallel transpose of matrix
 void transpose(matrix_t &bt, matrix_t &b, vector_t &send, vector_t &recv, std::vector<int> &nPerRankVec, std::vector<int> &bsize, std::vector<int> &displacement, int n, int rank, int size, MPI_Comm myComm) {
 	int nPerRank = nPerRankVec.at(rank);
 	int block_M, current_j = 0, count = 0;
@@ -122,14 +122,14 @@ void transpose(matrix_t &bt, matrix_t &b, vector_t &send, vector_t &recv, std::v
   }
 }
 
-
+// Fill matrix with dummy values
 void fillMatrix(matrix_t &b, std::vector<int> &displacementgather, int n1, int n2, int rank) {
 	for (int i = 0; i < n1 * n2; i++) {
 		b.vec.at(i) = i + n1*displacementgather.at(rank);
 	}
 }
 
-
+// Test the transpose function
 void testTranspose(matrix_t &bt, matrix_t &b, int m, std::vector<int> &bsize, std::vector<int> &bsizegather, std::vector<int> &displacement, std::vector<int> &displacementgather, std::vector<int> &nPerRankVec, int rank, int size, MPI_Comm myComm, vector_t &send, vector_t &recv) {
 	matrix_t result = makeMatrix(m,m);
 
@@ -145,4 +145,25 @@ void testTranspose(matrix_t &bt, matrix_t &b, int m, std::vector<int> &bsize, st
 	if(rank == 0) std::cout << "After transpose: " << std::endl;
 	if(rank == 0) printMatrix(result);
 	// if (rank == 0) exportMatrix(result);
+}
+
+// Pick which rhs function to use
+auto rhsPicker(int p, int rank) -> double(*)(double, double)
+{
+    if (p == 0) {
+			return fRhs;
+		}
+		if (p == 1) {
+			return singularRhs;
+		}
+		if (p == 2) {
+			return invRadialRhs;
+		}
+		if (p == 3) {
+			return expRhs;
+		}
+		if (p == 4) {
+			return trigRhs;
+		}
+		return fRhs; // Default
 }

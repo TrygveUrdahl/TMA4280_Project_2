@@ -57,3 +57,5 @@ void testTranspose(matrix_t &bt, matrix_t &b, int m, std::vector<int> &bsize,
 // Fill a matrix with dummy values
 void fillMatrix(matrix_t &b, std::vector<int> &displacementgather, int n1,
                   int n2, int rank);
+
+auto rhsPicker(int p, int rank) -> double(*)(double, double);
