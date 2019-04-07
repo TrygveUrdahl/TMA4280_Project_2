@@ -6,9 +6,6 @@ build/*
 output/*
 !output/.gitinclude
 
-data/*
-!data/.gitinclude
-
 poisson/*
 
 # Exclude all png images
