@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
   matrix_t bt = makeMatrix(nPerRank, m);
   vector_t xAxis = makeVector(nPerRank);
   vector_t yAxis = makeVector(n + 1);
-  vector_t z = makeVector(nn);
+  vector_t z = makeVector(nn * omp_get_max_threads());
   vector_t diag = makeVector(n);
   vector_t send = makeVector(nPerRank * m);
   vector_t recv = makeVector(nPerRank * m);
@@ -151,7 +151,7 @@ int main(int argc, char** argv) {
   // Start solving, one column FST per iteration
   #pragma omp parallel for schedule(static)
   for (int i = 0; i < nPerRank; i++) {
-    fst_(b.vec.data() + (m * i), &n, z.vec.data(), &nn);
+    fst_(b.vec.data() + (m * i), &n, z.vec.data() + omp_get_thread_num() * nn, &nn);
   }
 #ifdef printdebug
   if (rank == 0) std::cout << "First fst done... " << std::endl;
@@ -168,7 +168,7 @@ int main(int argc, char** argv) {
   // Inverse FST per column
   #pragma omp parallel for schedule(static)
   for (int i = 0; i < nPerRank; i++) {
-    fstinv_(bt.vec.data() + (m * i), &n, z.vec.data(), &nn);
+    fstinv_(bt.vec.data() + (m * i), &n, z.vec.data() + omp_get_thread_num() * nn, &nn);
   }
 #ifdef printdebug
   if (rank == 0) std::cout << "First fstinv done... " << std::endl;
@@ -190,7 +190,7 @@ int main(int argc, char** argv) {
 
   #pragma omp parallel for schedule(static)
   for (int i = 0; i < nPerRank; i++) {
-    fst_(bt.vec.data() + (m * i), &n, z.vec.data(), &nn);
+    fst_(bt.vec.data() + (m * i), &n, z.vec.data() + omp_get_thread_num() * nn, &nn);
   }
 #ifdef printdebug
   if (rank == 0) std::cout << "Second fst done... " << std::endl;
@@ -204,7 +204,7 @@ int main(int argc, char** argv) {
 #endif // printdebug
   #pragma omp parallel for schedule(static)
   for (int i = 0; i < nPerRank; i++) {
-    fstinv_(b.vec.data() + (m * i), &n, z.vec.data(), &nn);
+    fstinv_(b.vec.data() + (m * i), &n, z.vec.data() + omp_get_thread_num() * nn, &nn);
   }
   auto end = std::chrono::high_resolution_clock::now();
 #ifdef printdebug
