@@ -1,4 +1,5 @@
-#define testtranspose
+// #define testtranspose
+// #define printdebug
 
 #include <iostream>
 #include <vector>
@@ -14,6 +15,15 @@
 
 double fRhs(double x, double y) {
   return 1;
+}
+
+double singularRhs(double x, double y) {
+  double val = 10;
+  if (x == 0.25 && y == 0.25) return val;
+  if (x == 0.25 && y == 0.75) return -val;
+  if (x == 0.75 && y == 0.25) return -val;
+  if (x == 0.75 && y == 0.75) return val;
+  return 0;
 }
 
 int main(int argc, char** argv) {
@@ -40,14 +50,14 @@ int main(int argc, char** argv) {
   int t = 1;
   if (argc > 2) t = atoi(argv[2]);
   // omp_set_num_threads(t);
-  
+
 #ifndef testtranspose
   if (!((n != 0) && ((n &(n - 1)) == 0))) {
     std::cout << "\"n\" must be power of two! " << std::endl;
     MPI_Abort(MPI_COMM_WORLD, MPI_ERR_DIMS);
     return 1;
   }
-#endif
+#endif // testtranspose
 
 
                                           // Grid points per direction is n + 1
@@ -99,7 +109,7 @@ int main(int argc, char** argv) {
 #ifdef testtranspose
   testTranspose(bt, b, m, bsize, bsizegather, displacement, displacementgather, nPerRankVec, rank, size, myComm, send, recv);
 
-#endif
+#endif // testtranspose
 
 #ifndef testtranspose
   // Create local x and y axis index vectors for convenience
@@ -120,29 +130,36 @@ int main(int argc, char** argv) {
       *elem = h * h * rhs(fRhs, xAxis.vec.at(i), yAxis.vec.at(j));
     }
   }
+  auto start = std::chrono::high_resolution_clock::now();
+#ifdef printdebug
   if (rank == 0) std::cout << "First fst starting... " << std::endl;
+#endif // printdebug
   // Start solving, one column FST per iteration
   //#pragma omp parallel for schedule(static)
   for (int i = 0; i < nPerRank; i++) {
     fst_(b.vec.data() + (m * i), &n, z.vec.data(), &nn);
   }
+#ifdef printdebug
   if (rank == 0) std::cout << "First fst done... " << std::endl;
   if (rank == 0) std::cout << "First transpose starting... " << std::endl;
-
+#endif // printdebug
   // Transpose
   //transpose_p(bt, b, bsize, displacement, nPerRankVec, rank, size, myComm);
   //transpose(bt, b, bsize, displacement, nPerRankVec, rank, size, myComm);
   transpose_3(bt, b, send, recv, nPerRankVec, bsize, displacement, m, rank, size, myComm);
+#ifdef printdebug
   if (rank == 0) std::cout << "First transpose done... " << std::endl;
   if (rank == 0) std::cout << "First fstinv starting... " << std::endl;
-
+#endif // printdebug
   // Inverse FST per column
   //#pragma omp parallel for schedule(static)
   for (int i = 0; i < nPerRank; i++) {
     fstinv_(bt.vec.data() + (m * i), &n, z.vec.data(), &nn);
   }
+#ifdef printdebug
   if (rank == 0) std::cout << "First fstinv done... " << std::endl;
   if (rank == 0) std::cout << "Middle step starting... " << std::endl;
+#endif // printdebug
 
   #pragma omp parallel for schedule(static)
   for (int i = 0; i < nPerRank; i++) {
@@ -151,43 +168,47 @@ int main(int argc, char** argv) {
       *elem /= diag.vec.at(i + rank * nPerRank) + diag.vec.at(j);
     }
   }
+#ifdef printdebug
   if (rank == 0) std::cout << "Middle step done... " << std::endl;
   if (rank == 0) std::cout << "Second fst starting... " << std::endl;
+#endif // printdebug
 
   //#pragma omp parallel for schedule(static)
   for (int i = 0; i < nPerRank; i++) {
     fst_(bt.vec.data() + (m * i), &n, z.vec.data(), &nn);
   }
+#ifdef printdebug
   if (rank == 0) std::cout << "Second fst done... " << std::endl;
   if (rank == 0) std::cout << "Second transpose starting... " << std::endl;
-
+#endif // printdebug
   // Transpose
   //transpose_p(b, bt, bsize, displacement, nPerRankVec, rank, size, myComm);
   //transpose(b, bt, bsize, displacement, nPerRankVec, rank, size, myComm);
   transpose_3(b, bt, send, recv, nPerRankVec, bsize, displacement, m, rank, size, myComm);
+#ifdef print
   if (rank == 0) std::cout << "Second transpose done... " << std::endl;
   if (rank == 0) std::cout << "Second fstinv starting... " << std::endl;
-
+#endif // printdebug
   //#pragma omp parallel for schedule(static)
   for (int i = 0; i < nPerRank; i++) {
     fstinv_(b.vec.data() + (m * i), &n, z.vec.data(), &nn);
   }
+  auto end = std::chrono::high_resolution_clock::now();
+#ifdef printdebug
   if (rank == 0) std::cout << "Second fstinv done... " << std::endl;
   if (rank == 0) std::cout << "Gather starting... " << std::endl;
-
+#endif // printdebug
   matrix_t result = makeMatrix(m,m);
   gatherMatrix(result, b, bsizegather, displacementgather, rank, myComm);
+#ifdef printdebug
   if (rank == 0) std::cout << "Gather done... " << std::endl;
-
+#endif // printdebug
   if(rank == 0) exportMatrix(result);
-#endif
+#endif // testtranspose
 
-/*
-  auto start = std::chrono::high_resolution_clock::now();
-  auto end = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> diff = end-start;
-  std::cout << "Time taken: " << diff.count() << "s" << std::endl;
-*/
+  std::cout << "Time taken for solving: " << diff.count() << "s" << std::endl;
+
 
 
   MPI_Finalize();

@@ -152,7 +152,6 @@ void transpose_p(matrix_t &bt, matrix_t &b, std::vector<int> bsize, std::vector<
 
 
 void transpose_3(matrix_t &bt, matrix_t &b, vector_t &send, vector_t &recv, std::vector<int> &nPerRankVec, std::vector<int> &bsize, std::vector<int> &displacement, int n, int rank, int size, MPI_Comm myComm) {
-	MPI_Request req;
 	int nPerRank = nPerRankVec.at(rank);
 	for (int i = 0; i < nPerRank; i++) {
     for (int j = 0; j < n; j++) {
@@ -163,12 +162,14 @@ void transpose_3(matrix_t &bt, matrix_t &b, vector_t &send, vector_t &recv, std:
 			send.vec.at((nPerRank * i) + (j / nPerRank) * (nPerRank * nPerRank) + j % nPerRank) = b.vec.at(matIdx(b,i,j));//
 		}
   }
-
+#ifdef printdebug
 	if (rank == 0) std::cout << "Alltoallv starting... " << std::endl;
-	MPI_Ialltoallv(send.vec.data(), bsize.data(), displacement.data(), MPI_DOUBLE,
-                recv.vec.data(), bsize.data(), displacement.data(), MPI_DOUBLE, myComm, &req);
-	MPI_Wait(&req, MPI_STATUS_IGNORE);
+#endif // printdebug
+	MPI_Alltoallv(send.vec.data(), bsize.data(), displacement.data(), MPI_DOUBLE,
+                recv.vec.data(), bsize.data(), displacement.data(), MPI_DOUBLE, myComm);
+#ifdef printdebug
 	if (rank == 0) std::cout << "Alltoallv done... " << std::endl;
+#endif // printdebug
 
   int val = 0;
   for (int j=0; j < n; j++) {
