@@ -37,20 +37,23 @@ void exportMatrix(matrix_t &mat, std::string fname = "../output/mat.txt");
 // mat: matrix to print
 void printMatrix(matrix_t &mat);
 
-
-void transpose(matrix_t &bt, matrix_t &b, std::vector<int> &bsize, std::vector<int> &displacement,
-                std::vector<int> &nPerRankVec, int rank, int size, MPI_Comm myComm);
-
+// Parallel transpose
+void transpose(matrix_t &bt, matrix_t &b, vector_t &send, vector_t &recv,
+                  std::vector<int> &nPerRankVec, std::vector<int> &bsize,
+                  std::vector<int> &displacement, int n, int rank, int size,
+                  MPI_Comm myComm);
 
 // Gather all b matrices to result on root node 0
 // Input
 void gatherMatrix(matrix_t &result, matrix_t &b, std::vector<int> &bsize,
                 std::vector<int> &displacement, int rank, MPI_Comm myComm);
 
-void transpose_p(matrix_t &bt, matrix_t &b, std::vector<int> bsize, std::vector<int> displ, std::vector<int> nPerRankVec, int rank, int size, MPI_Comm myComm);
+// Function to test the transpose, printing a dummy matrix before and after transpose
+void testTranspose(matrix_t &bt, matrix_t &b, int m, std::vector<int> &bsize,
+                  std::vector<int> &bsizegather, std::vector<int> &displacement,
+                  std::vector<int> &displacementgather, std::vector<int> &nPerRankVec,
+                  int rank, int size, MPI_Comm myComm, vector_t &send, vector_t &recv);
 
-void testTranspose(matrix_t &bt, matrix_t &b, int m, std::vector<int> &bsize, std::vector<int> &bsizegather, std::vector<int> &displacement, std::vector<int> &displacementgather, std::vector<int> &nPerRankVec, int rank, int size, MPI_Comm myComm, vector_t &send, vector_t &recv);
-
-void fillMatrix(matrix_t &b, std::vector<int> &displacementgather, int n1, int n2, int rank);
-
-void transpose_3(matrix_t &bt, matrix_t &b, vector_t &send, vector_t &recv, std::vector<int> &nPerRankVec, std::vector<int> &bsize, std::vector<int> &displacement, int n, int rank, int size, MPI_Comm myComm);
+// Fill a matrix with dummy values
+void fillMatrix(matrix_t &b, std::vector<int> &displacementgather, int n1,
+                  int n2, int rank);

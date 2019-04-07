@@ -1,5 +1,5 @@
 // #define testtranspose
-// #define printdebug
+#define printdebug
 
 #include <iostream>
 #include <vector>
@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
 
       std::cout << "\tint t: number of OpenMP threads to use (defaults to 1)" << std::endl;
       }
-    MPI_Abort(MPI_COMM_WORLD, MPI_ERR_ARG);
+    MPI_Abort(myComm, MPI_ERR_ARG);
     return 1;
 
   }
@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
 #ifndef testtranspose
   if (!((n != 0) && ((n &(n - 1)) == 0))) {
     std::cout << "\"n\" must be power of two! " << std::endl;
-    MPI_Abort(MPI_COMM_WORLD, MPI_ERR_DIMS);
+    MPI_Abort(myComm, MPI_ERR_DIMS);
     return 1;
   }
 #endif // testtranspose
@@ -91,24 +91,20 @@ int main(int argc, char** argv) {
   std::vector<int> bsizegather(size, 0);
   std::vector<int> displacement(size, 0);
   std::vector<int> displacementgather(size, 0);
-  std::vector<int> localdisplacement(size, 0);
 
-  // Initialize vectors for transpose logic
-  if (rank==0) std::cout << "bsize: ";
+  // Initialize vectors for transpose logic and final gather
   for (int i = 0; i < size; i++) {
     bsize.at(i) = nPerRankVec.at(rank) * nPerRankVec.at(i);
     bsizegather.at(i) = nPerRankVec.at(i) * m;
-    if (rank == 0) std::cout << bsize.at(i) << " ";
   }
   if (rank==0) std::cout << std::endl;
   for (int i = 1; i < size; i++) {
     displacement.at(i) = displacement.at(i - 1) + bsize.at(i - 1);
     displacementgather.at(i) = displacementgather.at(i - 1) + bsizegather.at(i - 1);
-    localdisplacement.at(i) = localdisplacement.at(i - 1) + nPerRankVec.at(i - 1);
   }
+
 #ifdef testtranspose
   testTranspose(bt, b, m, bsize, bsizegather, displacement, displacementgather, nPerRankVec, rank, size, myComm, send, recv);
-
 #endif // testtranspose
 
 #ifndef testtranspose
@@ -144,9 +140,7 @@ int main(int argc, char** argv) {
   if (rank == 0) std::cout << "First transpose starting... " << std::endl;
 #endif // printdebug
   // Transpose
-  //transpose_p(bt, b, bsize, displacement, nPerRankVec, rank, size, myComm);
-  //transpose(bt, b, bsize, displacement, nPerRankVec, rank, size, myComm);
-  transpose_3(bt, b, send, recv, nPerRankVec, bsize, displacement, m, rank, size, myComm);
+  transpose(bt, b, send, recv, nPerRankVec, bsize, displacement, m, rank, size, myComm);
 #ifdef printdebug
   if (rank == 0) std::cout << "First transpose done... " << std::endl;
   if (rank == 0) std::cout << "First fstinv starting... " << std::endl;
@@ -182,9 +176,7 @@ int main(int argc, char** argv) {
   if (rank == 0) std::cout << "Second transpose starting... " << std::endl;
 #endif // printdebug
   // Transpose
-  //transpose_p(b, bt, bsize, displacement, nPerRankVec, rank, size, myComm);
-  //transpose(b, bt, bsize, displacement, nPerRankVec, rank, size, myComm);
-  transpose_3(b, bt, send, recv, nPerRankVec, bsize, displacement, m, rank, size, myComm);
+  transpose(b, bt, send, recv, nPerRankVec, bsize, displacement, m, rank, size, myComm);
 #ifdef print
   if (rank == 0) std::cout << "Second transpose done... " << std::endl;
   if (rank == 0) std::cout << "Second fstinv starting... " << std::endl;
@@ -204,11 +196,10 @@ int main(int argc, char** argv) {
   if (rank == 0) std::cout << "Gather done... " << std::endl;
 #endif // printdebug
   if(rank == 0) exportMatrix(result);
+
+  std::chrono::duration<double> diff = end - start;
+  if(rank == 0) std::cout << "Time taken for solving: " << diff.count() << "s" << std::endl;
 #endif // testtranspose
-
-  std::chrono::duration<double> diff = end-start;
-  std::cout << "Time taken for solving: " << diff.count() << "s" << std::endl;
-
 
 
   MPI_Finalize();
