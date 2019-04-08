@@ -1,5 +1,4 @@
 #!/bin/sh
-
 #SBATCH --partition=WORKQ
 #SBATCH --time=00:02:00
 #SBATCH --nodes=2

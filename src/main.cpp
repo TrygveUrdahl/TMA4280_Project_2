@@ -1,5 +1,5 @@
 // #define testtranspose
-// #define printdebug
+#define printdebug
 // #define export
 
 #include <iostream>
@@ -111,7 +111,9 @@ int main(int argc, char** argv) {
 
   // Initialize vectors for transpose logic and final gather
   for (int i = 0; i < size; i++) {
-    bsize.at(i) = nPerRankVec.at(rank) * nPerRankVec.at(i);
+    bsize.at(i) = nPerRankVec.at(rank) * nPerRankVec.at(i); // m/size; //
+		//if (i < m % size) bsize.at(i)++;
+		//bsize.at(i) *= nPerRank;
     bsizegather.at(i) = nPerRankVec.at(i) * m;
   }
 
