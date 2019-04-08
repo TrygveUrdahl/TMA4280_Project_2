@@ -104,11 +104,9 @@ void transpose(matrix_t &bt, matrix_t &b, vector_t &send, vector_t &recv, std::v
 		current_j += block_M;
 	}
 
-	if (rank == 0) std::cout << "Alltoallv starting... " << std::endl;
 
 	MPI_Alltoallv(send.vec.data(), bsize.data(), displacement.data(), MPI_DOUBLE,
                 recv.vec.data(), bsize.data(), displacement.data(), MPI_DOUBLE, myComm);
-	if (rank == 0) std::cout << "Alltoallv done... " << std::endl;
 
   int val = 0;
   for (int j=0; j < n; j++) {

@@ -4,7 +4,7 @@
 #SBATCH --nodes=2
 #SBATCH --ntasks-per-node=16
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=8000
+#SBATCH --mem=12000
 #SBATCH --job-name="poissontest"
 #SBATCH --output=test.out
 #SBATCH --mail-user=trygveur@stud.ntnu.no
