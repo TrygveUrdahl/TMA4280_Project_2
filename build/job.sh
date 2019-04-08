@@ -2,7 +2,7 @@
 
 #SBATCH --partition=WORKQ
 #SBATCH --time=00:02:00
-#SBATCH --nodes=1
+#SBATCH --nodes=2
 #SBATCH --ntasks-per-node=10
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=8000
@@ -28,6 +28,6 @@ module load GCC OpenMPI CMake
 cmake ../src
 make
 mpirun hostname
-mpirun -np ${SLURM_NTASKS} ./poisson 2048 0 1
+mpirun -np ${SLURM_NTASKS} ./poisson 8192 0 1
 
 uname -a

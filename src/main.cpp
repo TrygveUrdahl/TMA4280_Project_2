@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
     MPI_Abort(myComm, MPI_ERR_DIMS);
     return 1;
   }
-	std::cout << "Problem size: " << n << ". " << std::endl;
+	if (rank == 0) std::cout << "Problem size: " << n << ". " << std::endl;
   if (rank == 0) {
     if (p == 0) {
 			std::cout << "Rhs: f(x, y) = 1. " << std::endl;
