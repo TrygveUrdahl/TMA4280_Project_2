@@ -23,11 +23,11 @@ echo "We are using $SLURM_CPUS_ON_NODE cores per node"
 echo "Total of $SLURM_NTASKS cores"
 
 module purge
-module load GCC OpenMPI
+module load GCC OpenMPI CMake
 
 cmake ../src
 make
 mpirun hostname
-mpirun -np ${SLURM_NTASKS} ./poisson 4096 0 1
+mpirun -np ${SLURM_NTASKS} ./poisson 2048 0 1
 
 uname -a
