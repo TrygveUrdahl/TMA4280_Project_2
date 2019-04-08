@@ -147,7 +147,7 @@ void testTranspose(matrix_t &bt, matrix_t &b, int m, std::vector<int> &bsize, st
 	// if (rank == 0) exportMatrix(result);
 }
 
-// Pick which rhs function to use
+// Pick which rhs function to use (yay for trailing return type)
 auto rhsPicker(int p, int rank) -> double(*)(double, double)
 {
     if (p == 0) {
@@ -164,6 +164,9 @@ auto rhsPicker(int p, int rank) -> double(*)(double, double)
 		}
 		if (p == 4) {
 			return trigRhs;
+		}
+		if (p == 5) {
+			return discreteRhs;
 		}
 		return fRhs; // Default
 }

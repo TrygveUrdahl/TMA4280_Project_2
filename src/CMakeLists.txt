@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.1)
 project(TMA4280_Project_2)
 
 enable_language(Fortran)
+enable_language(C)
 enable_language(CXX)
 
 #SET(CMAKE_CXX_COMPILER "g++-8")
@@ -25,8 +26,7 @@ endif()
 if(OPENMP_FOUND)
   add_definitions(-DHAVE_OPENMP=1)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -openmp")
-  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
 include_directories(${INCLUDES})

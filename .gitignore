@@ -2,6 +2,7 @@
 
 build/*
 !build/.gitinclude
+!build/job.sh
 
 output/*
 !output/.gitinclude

@@ -1,5 +1,6 @@
 // #define testtranspose
 // #define printdebug
+// #define export
 
 #include <iostream>
 #include <vector>
@@ -27,7 +28,7 @@ int main(int argc, char** argv) {
     if (rank == 0) {
       std::cout << "Requires argument(s): " << std::endl;
       std::cout << "\tint n: size of grid (must be power of two)" << std::endl;
-      std::cout << "\tint r: which right hand side to use (0-4, defaults to 0)" << std::endl;
+      std::cout << "\tint r: which right hand side to use (0-5, defaults to 0)" << std::endl;
       std::cout << "\tint t: upper limit of number of OpenMP threads to use (defaults to 1)" << std::endl;
       }
     MPI_Abort(myComm, MPI_ERR_ARG);
@@ -50,22 +51,25 @@ int main(int argc, char** argv) {
 
   if (rank == 0) {
     if (p == 0) {
-			std::cout << "Rhs: f(x, y) = 1" << std::endl;
+			std::cout << "Rhs: f(x, y) = 1. " << std::endl;
 		}
 		else if (p == 1) {
-			std::cout << "Rhs: 4 single points of value 1 or -1, otherwise 0" << std::endl;
+			std::cout << "Rhs: 4 single points of value 1 or -1, otherwise 0. " << std::endl;
 		}
 		else if (p == 2) {
-			std::cout << "Rhs: f(x, y) = 1/(x^2 + y^2)" << std::endl;
+			std::cout << "Rhs: f(x, y) = 1/(x^2 + y^2). " << std::endl;
 		}
 		else if (p == 3) {
-			std::cout << "Rhs: f(x, y) = exp(x * y)" << std::endl;
+			std::cout << "Rhs: f(x, y) = exp(x * y). " << std::endl;
 		}
 		else if (p == 4) {
-			std::cout << "Rhs: f(x, y) = sin(2PI*x) * sin(2PI*y)" << std::endl;
+			std::cout << "Rhs: f(x, y) = sin(2PI*x) * sin(2PI*y). " << std::endl;
+		}
+		else if (p == 5) {
+			std::cout << "Rhs: two opposing squares each 1/4 of total size with constant values. " << std::endl;
 		}
 		else {
-			std::cout << "DEFAULTS Rhs: f(x, y) = 1" << std::endl;
+			std::cout << "DEFAULT Rhs: f(x, y) = 1" << std::endl;
 		}
   }
 
@@ -140,7 +144,7 @@ int main(int argc, char** argv) {
     }
   }
 #ifdef printdebug
-  if (rank == 0) std::cout << "All initializations complete. " << std::endl;
+  if (rank == 0) std::cout << "All initializations complete! " << std::endl;
   if (rank == 0) std::cout << "Starting timer... " << std::endl;
 #endif // printdebug
   auto start = std::chrono::high_resolution_clock::now();
@@ -154,14 +158,14 @@ int main(int argc, char** argv) {
     fst_(b.vec.data() + (m * i), &n, z.vec.data() + omp_get_thread_num() * nn, &nn);
   }
 #ifdef printdebug
-  if (rank == 0) std::cout << "First fst done... " << std::endl;
+  if (rank == 0) std::cout << "First fst done! " << std::endl;
   if (rank == 0) std::cout << "First transpose starting... " << std::endl;
 #endif // printdebug
 
   // Transpose
   transpose(bt, b, send, recv, nPerRankVec, bsize, displacement, m, rank, size, myComm);
 #ifdef printdebug
-  if (rank == 0) std::cout << "First transpose done... " << std::endl;
+  if (rank == 0) std::cout << "First transpose done! " << std::endl;
   if (rank == 0) std::cout << "First fstinv starting... " << std::endl;
 #endif // printdebug
 
@@ -171,7 +175,7 @@ int main(int argc, char** argv) {
     fstinv_(bt.vec.data() + (m * i), &n, z.vec.data() + omp_get_thread_num() * nn, &nn);
   }
 #ifdef printdebug
-  if (rank == 0) std::cout << "First fstinv done... " << std::endl;
+  if (rank == 0) std::cout << "First fstinv done! " << std::endl;
   if (rank == 0) std::cout << "Middle step starting... " << std::endl;
 #endif // printdebug
 
@@ -184,7 +188,7 @@ int main(int argc, char** argv) {
   }
 
 #ifdef printdebug
-  if (rank == 0) std::cout << "Middle step done... " << std::endl;
+  if (rank == 0) std::cout << "Middle step done! " << std::endl;
   if (rank == 0) std::cout << "Second fst starting... " << std::endl;
 #endif // printdebug
 
@@ -193,13 +197,13 @@ int main(int argc, char** argv) {
     fst_(bt.vec.data() + (m * i), &n, z.vec.data() + omp_get_thread_num() * nn, &nn);
   }
 #ifdef printdebug
-  if (rank == 0) std::cout << "Second fst done... " << std::endl;
+  if (rank == 0) std::cout << "Second fst done! " << std::endl;
   if (rank == 0) std::cout << "Second transpose starting... " << std::endl;
 #endif // printdebug
   // Transpose
   transpose(b, bt, send, recv, nPerRankVec, bsize, displacement, m, rank, size, myComm);
 #ifdef print
-  if (rank == 0) std::cout << "Second transpose done... " << std::endl;
+  if (rank == 0) std::cout << "Second transpose done! " << std::endl;
   if (rank == 0) std::cout << "Second fstinv starting... " << std::endl;
 #endif // printdebug
   #pragma omp parallel for schedule(static)
@@ -208,20 +212,19 @@ int main(int argc, char** argv) {
   }
   auto end = std::chrono::high_resolution_clock::now();
 #ifdef printdebug
-  if (rank == 0) std::cout << "Second fstinv done... " << std::endl;
-  if (rank == 0) std::cout << "Gather starting... " << std::endl;
+  if (rank == 0) std::cout << "Second fstinv done! " << std::endl;
 #endif // printdebug
+#ifdef export
+	if (rank == 0) std::cout << "Starting export..." << std::endl;
   matrix_t result = makeMatrix(m,m);
   gatherMatrix(result, b, bsizegather, displacementgather, rank, myComm);
-#ifdef printdebug
-  if (rank == 0) std::cout << "Gather done... " << std::endl;
-#endif // printdebug
   if(rank == 0) exportMatrix(result);
-
+	if (rank == 0) std::cout << "Export done! " << std::endl;
+#endif // export
   std::chrono::duration<double> diff = end - start;
   if(rank == 0) std::cout << "Time taken for solving: " << diff.count() << "s" << std::endl;
 #endif // testtranspose
-
+#ifdef export
   double u_max = 0.0;
   for (size_t i = 0; i < m; i++) {
       for (size_t j = 0; j < m; j++) {
@@ -229,6 +232,7 @@ int main(int argc, char** argv) {
       }
   }
   if (rank == 0) std::cout << "u_max = " << u_max << std::endl;
+#endif // export
 
   MPI_Finalize();
   return 0;
