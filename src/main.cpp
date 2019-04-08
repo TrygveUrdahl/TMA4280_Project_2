@@ -111,8 +111,8 @@ int main(int argc, char** argv) {
 
   // Initialize vectors for transpose logic and final gather
   for (int i = 0; i < size; i++) {
-    bsize.at(i) = nPerRankVec.at(rank) * nPerRank;
-    bsizegather.at(i) = nPerRank * m;
+    bsize.at(i) = nPerRankVec.at(rank) * nPerRankVec.at(i);
+    bsizegather.at(i) = nPerRankVec.at(i) * m;
   }
 
   for (int i = 1; i < size; i++) {
