@@ -3,13 +3,13 @@
 #SBATCH --partition=WORKQ
 #SBATCH --time=00:02:00
 #SBATCH --nodes=2
-#SBATCH --ntasks-per-node=10
-#SBATCH --cpus-per-task=1
+#SBATCH --ntasks-per-node=8
+#SBATCH --cpus-per-task=2
 #SBATCH --mem=8000
-#SBATCH --job-name="poisson_test"
-#SBATCH --output=poisson_test.out
+#SBATCH --job-name="poissontest"
+#SBATCH --output=test.out
 #SBATCH --mail-user=trygveur@stud.ntnu.no
-#SBATCH --mail-type=ALL
+#SBATCH --mail-type=END
 
 WORKDIR=${SLURM_SUBMIT_DIR}
 cd ${WORKDIR}
@@ -28,6 +28,6 @@ module load GCC OpenMPI CMake
 cmake ../src
 make
 mpirun hostname
-mpirun -np ${SLURM_NTASKS} ./poisson 8192 0 1
+mpirun -np ${SLURM_NTASKS} ./poisson 4096 0 1
 
 uname -a
