@@ -1,5 +1,5 @@
 // #define testtranspose
-#define printdebug
+// #define printdebug
 // #define export
 
 #include <iostream>
