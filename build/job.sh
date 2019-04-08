@@ -25,7 +25,6 @@ echo "Total of $SLURM_NTASKS cores"
 module purge
 module load GCC OpenMPI
 
-git clone https://github.com/TrygveUrdahl/TMA4280_Project_2
 cmake ../src
 make
 mpirun hostname
