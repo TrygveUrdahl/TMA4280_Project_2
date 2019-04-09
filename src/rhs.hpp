@@ -6,7 +6,7 @@ double fRhs(double x, double y) {
 }
 
 double singularRhs(double x, double y) {
-  double val = 10;
+  double val = 1;
   if (x == 0.25 && y == 0.25) return val;
   if (x == 0.25 && y == 0.75) return -val;
   if (x == 0.75 && y == 0.25) return -val;
