@@ -162,5 +162,8 @@ auto rhsPicker(int p, int rank) -> double(*)(double, double)
 		if (p == 5) {
 			return discreteRhs;
 		}
+		if (p == 99) {
+			return convergenceTestRhs;
+		}
 		return fRhs; // Default
 }

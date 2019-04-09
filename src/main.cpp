@@ -1,6 +1,7 @@
 // #define testtranspose
 // #define printdebug
 // #define export
+// #define testconvergence
 
 #include <iostream>
 #include <vector>
@@ -14,6 +15,7 @@
 #include "utils.hpp"
 #include "structs.hpp"
 
+double convergenceExactRhs(double x, double y);
 
 int main(int argc, char** argv) {
   MPI_Init(&argc, &argv);
@@ -111,9 +113,7 @@ int main(int argc, char** argv) {
 
   // Initialize vectors for transpose logic and final gather
   for (int i = 0; i < size; i++) {
-    bsize.at(i) = nPerRankVec.at(rank) * nPerRankVec.at(i); // m/size; //
-		//if (i < m % size) bsize.at(i)++;
-		//bsize.at(i) *= nPerRank;
+    bsize.at(i) = nPerRankVec.at(rank) * nPerRankVec.at(i);
     bsizegather.at(i) = nPerRankVec.at(i) * m;
   }
 
@@ -138,7 +138,9 @@ int main(int argc, char** argv) {
   for (int i = 0; i < n; i++) {
     diag.vec.at(i) = 2.0 * (1.0 - cos((i + 1) * M_PI / n));
   }
-
+#ifdef testconvergence
+	p = 99;
+#endif // testconvergence
   for (int i = 0; i < nPerRank; i++) {
     for (int j = 0; j < n; j++) {
       double* elem = b.vec.data() + matIdx(b, i, j);
@@ -235,6 +237,33 @@ int main(int argc, char** argv) {
   }
   if (rank == 0) std::cout << "u_max = " << u_max << std::endl;
 #endif // export
+
+#ifdef testconvergence
+	if (rank == 0) std::cout << "Starting convergence test..." << std::endl;
+	matrix_t result = makeMatrix(m,m);
+	gatherMatrix(result, b, bsizegather, displacementgather, rank, myComm);
+	if(rank == 0) {
+		bool correct = true;
+		int numWrong = 0;
+		for (int i = 0; i < m; i++) {
+			for (int j = 0; j < m; j++) {
+				if (!(abs(result.vec.at(matIdx(result, i, j)) - convergenceExactRhs(i, j)) < 1E-2)) {
+					numWrong++;
+					// std::cout << "First: " << result.vec.at(matIdx(result, i, j)) << std::endl;
+					// std::cout << "Second: " << convergenceExactRhs(i, j) << std::endl;
+					// std::cout << "Diff: " << abs(result.vec.at(matIdx(result, i, j)) - convergenceExactRhs(j, i)) << std::endl;
+					correct = false;
+				}
+			}
+		}
+		if (correct) {
+			std::cout << "Verification correct! " << std::endl;
+		}
+		else {
+			std::cout << "Verification failed. Something is wrong! NumWrong: " << numWrong << std::endl;
+		}
+	}
+#endif // testconvergence
 
   MPI_Finalize();
   return 0;

@@ -31,3 +31,11 @@ double discreteRhs(double x, double y) {
   if (x < 0.25 && y < 0.25) return -3;
   return 0;
 }
+
+double convergenceTestRhs(double x, double y) {
+  return 5 * M_PI * M_PI * sin(M_PI * x) * sin(2 * M_PI * y);
+}
+
+double convergenceExactRhs(double x, double y) {
+  return sin(M_PI * x) * sin(2 * M_PI * y);
+}

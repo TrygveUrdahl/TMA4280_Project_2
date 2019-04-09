@@ -172,7 +172,7 @@ int main(int argc, char **argv)
             u_max = u_max > fabs(b[i][j]) ? u_max : fabs(b[i][j]);
         }
     }
-    exportMatrix(b, m);
+    // exportMatrix(b, m);
     printf("u_max = %e\n", u_max);
 
     return 0;
