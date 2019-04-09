@@ -1,9 +1,8 @@
 #!/bin/sh
 #SBATCH --partition=WORKQ
-#SBATCH --time=00:02:00
+#SBATCH --time=00:05:00
 #SBATCH --nodes=2
-#SBATCH --ntasks-per-node=16
-#SBATCH --cpus-per-task=1
+#SBATCH --ntasks-per-node=10
 #SBATCH --mem=12000
 #SBATCH --job-name="poissontest"
 #SBATCH --output=test.out
@@ -27,6 +26,6 @@ module load GCC OpenMPI CMake
 cmake ../src
 make
 mpirun hostname
-mpirun -np ${SLURM_JOB_NUM_NODES} ./poisson 16384 0 ${SLURM_CPUS_ON_NODE}
+mpirun -np ${SLURM_JOB_NUM_NODES} ./poisson 8192 0 ${SLURM_CPUS_ON_NODE}
 
 uname -a
