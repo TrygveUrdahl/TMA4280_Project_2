@@ -250,7 +250,7 @@ int main(int argc, char** argv) {
 	double maxError = 0, maxVal = 0, maxErrorGlobal = 0;
 	for (int i = 0; i < nPerRank; i++) {
 		for (int j = 0; j < m; j++) {
-			if (!(abs(b.vec.at(matIdx(b, i, j)) - convergenceExactRhs(xAxis.vec.at(i), yAxis.vec.at(j))) < 1E-3)) {
+			if (!(abs(b.vec.at(matIdx(b, i, j)) - convergenceExactRhs(xAxis.vec.at(i), yAxis.vec.at(j))) < 1E-5)) {
 				double diff = abs(b.vec.at(matIdx(b, i, j)) - convergenceExactRhs(xAxis.vec.at(i), yAxis.vec.at(j)));
 				maxError = maxError > diff ? maxError : diff;
 				// std::cout << "First: " << result.vec.at(matIdx(result, i, j)) << std::endl;
