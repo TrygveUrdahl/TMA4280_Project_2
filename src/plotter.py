@@ -51,7 +51,9 @@ plt.title("Timings for different numbers of threads")
 plt.savefig("./output/timingsthread.png")
 plt.show()
 """
+
 """
+# Plot for timesHybrid
 plt.xlabel("Configuration (<p> x <t>, <N>)")
 plt.ylabel("Time ($s$)")
 plt.title("Run time comparison with hybrid models")

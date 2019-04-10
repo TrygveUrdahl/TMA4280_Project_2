@@ -1,7 +1,7 @@
 // #define testtranspose
 // #define printdebug
 // #define export
-#define testconvergence
+// #define testconvergence
 
 #include <iostream>
 #include <vector>
@@ -255,7 +255,7 @@ int main(int argc, char** argv) {
 				maxError = maxError > diff ? maxError : diff;
 				// std::cout << "First: " << result.vec.at(matIdx(result, i, j)) << std::endl;
 				// std::cout << "Second: " << convergenceExactRhs(i, j) << std::endl;
-				// std::cout << "Diff: " << abs(result.vec.at(matIdx(result, i, j)) - convergenceExactRhs(yAxis.vec.at(i), yAxis.vec.at(j))) << std::endl;
+				// std::cout << "Diff: " << abs(b.vec.at(matIdx(b, i, j)) - convergenceExactRhs(xAxis.vec.at(i), yAxis.vec.at(j))) << std::endl;
 				failed = 1;
 			}
 		}
