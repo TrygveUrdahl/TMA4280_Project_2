@@ -1,6 +1,6 @@
 // #define testtranspose
 // #define printdebug
-// #define export
+#define export
 // #define testconvergence
 
 #include <iostream>
@@ -141,10 +141,11 @@ int main(int argc, char** argv) {
 #ifdef testconvergence
 	p = 99;
 #endif // testconvergence
+
   for (int i = 0; i < nPerRank; i++) {
-    for (int j = 0; j < n; j++) {
-      double* elem = b.vec.data() + matIdx(b, i, j);
-      *elem = h * h * rhs(rhsPicker(p, rank), xAxis.vec.at(i), yAxis.vec.at(j));
+    for (int j = 0; j < m; j++) {
+      // double* elem = b.vec.data() + matIdx(b, i, j);
+      b.vec.at(matIdx(b, i, j)) = h * h * rhs(rhsPicker(p, rank), xAxis.vec.at(i), yAxis.vec.at(j));
     }
   }
 #ifdef printdebug
@@ -186,8 +187,9 @@ int main(int argc, char** argv) {
   #pragma omp parallel for schedule(static)
   for (int i = 0; i < nPerRank; i++) {
     for (int j = 0; j < m; j++) {
-      double* elem = bt.vec.data() + matIdx(b, i, j);
-      *elem /= diag.vec.at(i + rank * nPerRank) + diag.vec.at(j);
+			bt.vec.at(matIdx(bt, i, j)) /= diag.vec.at(i) + diag.vec.at(j);
+      // double* elem = bt.vec.data() + matIdx(b, i, j);
+      // *elem /= diag.vec.at(i + rank * nPerRank) + diag.vec.at(j);
     }
   }
 
@@ -245,10 +247,13 @@ int main(int argc, char** argv) {
 	if(rank == 0) {
 		bool correct = true;
 		int numWrong = 0;
+		double maxError = 0;
 		for (int i = 0; i < m; i++) {
 			for (int j = 0; j < m; j++) {
-				if (!(abs(result.vec.at(matIdx(result, i, j)) - convergenceExactRhs(i, j)) < 1E-2)) {
+				if (!(abs(result.vec.at(matIdx(result, i, j)) - convergenceExactRhs(i, j)) < 1E-5)) {
 					numWrong++;
+					double diff = abs(result.vec.at(matIdx(result, i, j)) - convergenceExactRhs(i, j));
+					maxError = maxError > diff ? maxError : diff;
 					// std::cout << "First: " << result.vec.at(matIdx(result, i, j)) << std::endl;
 					// std::cout << "Second: " << convergenceExactRhs(i, j) << std::endl;
 					// std::cout << "Diff: " << abs(result.vec.at(matIdx(result, i, j)) - convergenceExactRhs(j, i)) << std::endl;
@@ -261,6 +266,7 @@ int main(int argc, char** argv) {
 		}
 		else {
 			std::cout << "Verification failed. Something is wrong! NumWrong: " << numWrong << std::endl;
+			std::cout << "Max error: " << maxError << std::endl;
 		}
 	}
 #endif // testconvergence

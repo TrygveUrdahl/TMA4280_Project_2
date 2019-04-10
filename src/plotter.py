@@ -11,7 +11,12 @@ sizesPureMPI = [1024, 2048, 4096, 8192, 16384]
 timesMaxOMP = [142.401, 80.2883, 57.0892, 46.5551, 37.4316, 37.7438, 37.4435, 37.6526]
 threadsMaxOMP = [4, 8, 12, 16, 20, 24, 28, 32]
 
-"""
+timesHybrid = [39.6883, 39.2322, 46.5551, 46.3064, 45.8982]
+xcoordHybrid = [0, 1, 2, 3, 4]
+labelsHybrid = ["(1 x 16, 1)", "(2 x 8, 1)", "(2 x 8, 2)", "(4 x 4, 2)", "(8 x 2, 2)"]
+
+
+
 #  Plot for the solution of the Poisson problem
 plt.matshow(matrix)
 plt.xlabel("x")
@@ -19,7 +24,7 @@ plt.ylabel("y")
 plt.title("Poisson")
 plt.savefig("./output/poisson2.png")
 plt.show()
-"""
+
 
 #plt.semilogy(sizesLog, times, "*")
 fig, ax = plt.subplots()
@@ -44,5 +49,13 @@ plt.xlabel("Number of threads")
 plt.ylabel("Time ($s$)")
 plt.title("Timings for different numbers of threads")
 plt.savefig("./output/timingsthread.png")
+plt.show()
+"""
+"""
+plt.xlabel("Configuration (<p> x <t>, <N>)")
+plt.ylabel("Time ($s$)")
+plt.title("Run time comparison with hybrid models")
+plt.bar(xcoordHybrid, timesHybrid, width=0.8, tick_label=labelsHybrid)
+plt.savefig("./output/hybridcomp.png")
 plt.show()
 """
