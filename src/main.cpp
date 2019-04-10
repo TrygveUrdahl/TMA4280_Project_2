@@ -1,7 +1,7 @@
 // #define testtranspose
 // #define printdebug
-#define export
-// #define testconvergence
+// #define export
+#define testconvergence
 
 #include <iostream>
 #include <vector>
@@ -35,8 +35,8 @@ int main(int argc, char** argv) {
       }
     MPI_Abort(myComm, MPI_ERR_ARG);
     return 1;
-
   }
+
   int n = atoi(argv[1]);
   int p = 0;
   if (argc > 2) p = atoi(argv[2]);
@@ -51,7 +51,8 @@ int main(int argc, char** argv) {
     return 1;
   }
 	if (rank == 0) std::cout << "Problem size: " << n << ". " << std::endl;
-  if (rank == 0) {
+#ifndef testconvergence
+	if (rank == 0) {
     if (p == 0) {
 			std::cout << "Rhs: f(x, y) = 1. " << std::endl;
 		}
@@ -74,6 +75,7 @@ int main(int argc, char** argv) {
 			std::cout << "DEFAULT Rhs: f(x, y) = 1" << std::endl;
 		}
   }
+#endif // testconvergence
 
 #endif // testtranspose
 #ifdef printdebug
@@ -249,15 +251,16 @@ int main(int argc, char** argv) {
 		bool correct = true;
 		int numWrong = 0;
 		double maxError = 0;
+		double maxVal = 0;
 		for (int i = 0; i < m; i++) {
 			for (int j = 0; j < m; j++) {
-				if (!(abs(result.vec.at(matIdx(result, i, j)) - convergenceExactRhs(i, j)) < 1E-5)) {
+				if (!(abs(result.vec.at(matIdx(result, i, j)) - convergenceExactRhs(yAxis.vec.at(i), yAxis.vec.at(j))) < 1E-3)) {
 					numWrong++;
-					double diff = abs(result.vec.at(matIdx(result, i, j)) - convergenceExactRhs(i, j));
+					double diff = abs(result.vec.at(matIdx(result, i, j)) - convergenceExactRhs(yAxis.vec.at(i), yAxis.vec.at(j)));
 					maxError = maxError > diff ? maxError : diff;
 					// std::cout << "First: " << result.vec.at(matIdx(result, i, j)) << std::endl;
 					// std::cout << "Second: " << convergenceExactRhs(i, j) << std::endl;
-					// std::cout << "Diff: " << abs(result.vec.at(matIdx(result, i, j)) - convergenceExactRhs(j, i)) << std::endl;
+					std::cout << "Diff: " << abs(result.vec.at(matIdx(result, i, j)) - convergenceExactRhs(yAxis.vec.at(i), yAxis.vec.at(j))) << std::endl;
 					correct = false;
 				}
 			}
@@ -267,7 +270,7 @@ int main(int argc, char** argv) {
 		}
 		else {
 			std::cout << "Verification failed. Something is wrong! NumWrong: " << numWrong << std::endl;
-			std::cout << "Max error: " << maxError << std::endl;
+			std::cout << "Maximum pointwise error: " << maxError << std::endl;
 		}
 	}
 #endif // testconvergence
