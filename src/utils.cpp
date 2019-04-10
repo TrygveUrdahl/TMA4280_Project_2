@@ -104,7 +104,6 @@ void transpose(matrix_t &bt, matrix_t &b, vector_t &send, vector_t &recv, std::v
 		current_j += block_M;
 	}
 
-
 	MPI_Alltoallv(send.vec.data(), bsize.data(), displacement.data(), MPI_DOUBLE,
                 recv.vec.data(), bsize.data(), displacement.data(), MPI_DOUBLE, myComm);
 
@@ -142,7 +141,7 @@ void testTranspose(matrix_t &bt, matrix_t &b, int m, std::vector<int> &bsize, st
 }
 
 // Pick which rhs function to use (yay for trailing return type)
-auto rhsPicker(int p, int rank) -> double(*)(double, double)
+auto rhsPicker(int p) -> double(*)(double, double)
 {
     if (p == 0) {
 			return fRhs;

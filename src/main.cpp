@@ -138,14 +138,17 @@ int main(int argc, char** argv) {
   for (int i = 0; i < n; i++) {
     diag.vec.at(i) = 2.0 * (1.0 - cos((i + 1) * M_PI / n));
   }
+	int diagOffset = 0;
+	for (int i = 0; i < rank; i++) {
+		diagOffset += nPerRankVec.at(i);
+	}
 #ifdef testconvergence
 	p = 99;
 #endif // testconvergence
 
   for (int i = 0; i < nPerRank; i++) {
     for (int j = 0; j < m; j++) {
-      // double* elem = b.vec.data() + matIdx(b, i, j);
-      b.vec.at(matIdx(b, i, j)) = h * h * rhs(rhsPicker(p, rank), xAxis.vec.at(i), yAxis.vec.at(j));
+      b.vec.at(matIdx(b, i, j)) = h * h * rhs(rhsPicker(p), xAxis.vec.at(i), yAxis.vec.at(j));
     }
   }
 #ifdef printdebug
@@ -187,9 +190,7 @@ int main(int argc, char** argv) {
   #pragma omp parallel for schedule(static)
   for (int i = 0; i < nPerRank; i++) {
     for (int j = 0; j < m; j++) {
-			bt.vec.at(matIdx(bt, i, j)) /= diag.vec.at(i) + diag.vec.at(j);
-      // double* elem = bt.vec.data() + matIdx(b, i, j);
-      // *elem /= diag.vec.at(i + rank * nPerRank) + diag.vec.at(j);
+			bt.vec.at(matIdx(bt, i, j)) /= diag.vec.at(i + diagOffset) + diag.vec.at(j);
     }
   }
 

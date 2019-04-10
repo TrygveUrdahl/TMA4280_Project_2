@@ -59,4 +59,4 @@ void fillMatrix(matrix_t &b, std::vector<int> &displacementgather, int n1,
                   int n2, int rank);
 
 // Function to pick which rhs function to use
-auto rhsPicker(int p, int rank) -> double(*)(double, double);
+auto rhsPicker(int p) -> double(*)(double, double);
