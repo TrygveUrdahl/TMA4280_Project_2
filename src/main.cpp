@@ -245,32 +245,30 @@ int main(int argc, char** argv) {
 
 #ifdef testconvergence
 	if (rank == 0) std::cout << "Starting convergence test..." << std::endl;
-	matrix_t result = makeMatrix(m,m);
-	gatherMatrix(result, b, bsizegather, displacementgather, rank, myComm);
-	if(rank == 0) {
-		bool correct = true;
-		int numWrong = 0;
-		double maxError = 0;
-		double maxVal = 0;
-		for (int i = 0; i < m; i++) {
-			for (int j = 0; j < m; j++) {
-				if (!(abs(result.vec.at(matIdx(result, i, j)) - convergenceExactRhs(yAxis.vec.at(i), yAxis.vec.at(j))) < 1E-3)) {
-					numWrong++;
-					double diff = abs(result.vec.at(matIdx(result, i, j)) - convergenceExactRhs(yAxis.vec.at(i), yAxis.vec.at(j)));
-					maxError = maxError > diff ? maxError : diff;
-					// std::cout << "First: " << result.vec.at(matIdx(result, i, j)) << std::endl;
-					// std::cout << "Second: " << convergenceExactRhs(i, j) << std::endl;
-					std::cout << "Diff: " << abs(result.vec.at(matIdx(result, i, j)) - convergenceExactRhs(yAxis.vec.at(i), yAxis.vec.at(j))) << std::endl;
-					correct = false;
-				}
+
+	int failed = 0, failedGlobal = 0;
+	double maxError = 0, maxVal = 0, maxErrorGlobal = 0;
+	for (int i = 0; i < nPerRank; i++) {
+		for (int j = 0; j < m; j++) {
+			if (!(abs(b.vec.at(matIdx(b, i, j)) - convergenceExactRhs(xAxis.vec.at(i), yAxis.vec.at(j))) < 1E-3)) {
+				double diff = abs(b.vec.at(matIdx(b, i, j)) - convergenceExactRhs(xAxis.vec.at(i), yAxis.vec.at(j)));
+				maxError = maxError > diff ? maxError : diff;
+				// std::cout << "First: " << result.vec.at(matIdx(result, i, j)) << std::endl;
+				// std::cout << "Second: " << convergenceExactRhs(i, j) << std::endl;
+				// std::cout << "Diff: " << abs(result.vec.at(matIdx(result, i, j)) - convergenceExactRhs(yAxis.vec.at(i), yAxis.vec.at(j))) << std::endl;
+				failed = 1;
 			}
 		}
-		if (correct) {
+	}
+	MPI_Reduce(&maxError, &maxErrorGlobal, 1, MPI_DOUBLE, MPI_MAX, 0, myComm);
+	MPI_Reduce(&failed, &failedGlobal, 1, MPI_INT, MPI_MAX, 0, myComm);
+	if (rank == 0) {
+		if (!(failedGlobal == 1)) {
 			std::cout << "Verification correct! " << std::endl;
 		}
 		else {
-			std::cout << "Verification failed. Something is wrong! NumWrong: " << numWrong << std::endl;
-			std::cout << "Maximum pointwise error: " << maxError << std::endl;
+			std::cout << "Verification failed. Something is wrong! " << std::endl;
+			std::cout << "Largest single point error: " << maxErrorGlobal << std::endl;
 		}
 	}
 #endif // testconvergence
